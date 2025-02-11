@@ -1,0 +1,11 @@
+
+finam:
+  base-url: "https://trade-api.finam.ru"
+  token: "CAEQt7yjBRoYsXAtqeEWpASOoChCxzKi7SMci8UPRn0P"
+
+logging:
+  level:
+    org.springframework.web: DEBUG  # Уровень логирования для Spring Web
+    root: INFO # Уровень логирования для всего приложения (по умолчанию)
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr([%thread]){faint} %clr(%-5level) %clr(%logger{36}){cyan} %clr(: ) %msg%n" # Корректный формат

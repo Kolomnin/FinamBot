@@ -1,7 +1,7 @@
 
 finam:
   base-url: "https://trade-api.finam.ru"
-  token: "CAEQt7yjBRoYsXAtqeEWpASOoChCxzKi7SMci8UPRn0P"
+  token: 
 
 logging:
   level:

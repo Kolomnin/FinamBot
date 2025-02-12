@@ -34,18 +34,15 @@ public class FinamApiBotApplication implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            if (!TimeUtils.isMarketOpen("futures")) {
-                System.out.println("Биржа закрыта. Запрос данных невозможен.");
-                return;
-            }
+            // Убираем проверку на открытость рынка, так как она не нужна для получения исторических данных
 
             String timeFrame = "1"; // Проверьте, что timeFrame поддерживается Finam API
-            int maxIntervalDays = 7;
+            int maxIntervalDays = 30;
             String board = "FUT";
             String code = "SiH5";
 
             LocalDateTime startDate = LocalDateTime.ofInstant(Instant.parse("2025-02-01T00:00:00Z"), ZoneOffset.UTC);
-            LocalDateTime endDate = LocalDateTime.ofInstant(Instant.parse("2025-02-10T00:00:00Z"), ZoneOffset.UTC);
+            LocalDateTime endDate = LocalDateTime.ofInstant(Instant.parse("2025-02-12T00:00:00Z"), ZoneOffset.UTC);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 

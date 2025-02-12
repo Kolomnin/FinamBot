@@ -1,5 +1,7 @@
 package work.finamapibot;
 
+import work.finamapibot.entity.Candle;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -33,28 +35,11 @@ public class TimeUtils {
     private static final LocalTime CLEARING_END2 = LocalTime.of(19, 0);
 
 
-
-    public static boolean isMarketOpen(String marketType) {
-        LocalTime now = LocalTime.now(MOSCOW_ZONE);
-
-        boolean isClearing = (now.isAfter(CLEARING_START1) && now.isBefore(CLEARING_END1)) ||
-                (now.isAfter(CLEARING_START2) && now.isBefore(CLEARING_END2));
-
-        if (marketType.equalsIgnoreCase("stock")) {
-            return isTradingTime(now, STOCK_MORNING_START, STOCK_MORNING_END, STOCK_MAIN_START, STOCK_MAIN_END, STOCK_EVENING_START, STOCK_EVENING_END) && !isClearing;
-        } else if (marketType.equalsIgnoreCase("futures")) {
-            return isTradingTime(now, FUTURES_MORNING_START, FUTURES_MORNING_END, FUTURES_MAIN_START, FUTURES_MAIN_END, FUTURES_EVENING_START, FUTURES_EVENING_END) && !isClearing;
-        } else {
-            throw new IllegalArgumentException("Invalid market type. Use 'stock' or 'futures'.");
-        }
-    }
-
     private static boolean isTradingTime(LocalTime now, LocalTime morningStart, LocalTime morningEnd, LocalTime mainStart, LocalTime mainEnd, LocalTime eveningStart, LocalTime eveningEnd) {
         return (now.isAfter(morningStart) && now.isBefore(morningEnd)) ||
                 (now.isAfter(mainStart) && now.isBefore(mainEnd)) ||
                 (now.isAfter(eveningStart) && now.isBefore(eveningEnd));
     }
-
 
     public static List<String> splitIntoIntervals(LocalDateTime startDate, LocalDateTime endDate, int maxIntervalDays) {
         List<String> intervals = new ArrayList<>();
@@ -70,5 +55,35 @@ public class TimeUtils {
         }
 
         return intervals;
+    }
+
+    public static boolean isWithinTradingHours(LocalDateTime timestamp, String marketType) {
+        LocalTime now = timestamp.toLocalTime();
+        if (marketType.equalsIgnoreCase("stock")) {
+            return isTradingTime(now, STOCK_MORNING_START, STOCK_MORNING_END, STOCK_MAIN_START, STOCK_MAIN_END, STOCK_EVENING_START, STOCK_EVENING_END);
+        } else if (marketType.equalsIgnoreCase("futures")) {
+            return isTradingTime(now, FUTURES_MORNING_START, FUTURES_MORNING_END, FUTURES_MAIN_START, FUTURES_MAIN_END, FUTURES_EVENING_START, FUTURES_EVENING_END);
+        } else {
+            throw new IllegalArgumentException("Invalid market type. Use 'stock' or 'futures'.");
+        }
+    }
+
+    // Проверка, является ли дата выходным днем
+    private static boolean isWeekend(LocalDateTime timestamp) {
+        return timestamp.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || timestamp.getDayOfWeek() == java.time.DayOfWeek.SUNDAY;
+    }
+
+    // Проверка, попадает ли время в период клиринга
+    private static boolean isClearingTime(LocalDateTime timestamp) {
+        LocalTime time = timestamp.toLocalTime();
+        return (time.isAfter(CLEARING_START1) && time.isBefore(CLEARING_END1)) ||
+                (time.isAfter(CLEARING_START2) && time.isBefore(CLEARING_END2));
+    }
+
+    // Метод для фильтрации свечей, исключая выходные и время клиринга
+    public static List<Candle> filterTradingCandles(List<Candle> candles, String marketType) {
+        return candles.stream()
+                .filter(candle -> isWithinTradingHours(candle.getTimestamp(), marketType) && !isWeekend(candle.getTimestamp()) && !isClearingTime(candle.getTimestamp()))
+                .toList();
     }
 }
